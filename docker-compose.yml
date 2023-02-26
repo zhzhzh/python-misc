@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  dev:
+    container_name: 'python-misc'
+    build:
+      context: ./Modules
+      dockerfile: Dockerfile
+    volumes:
+      - ./Modules/:/app/
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - ./.env.docker

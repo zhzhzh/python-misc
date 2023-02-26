@@ -1,0 +1,6 @@
+{
+  "python.pythonPath": "${workspaceFolder}/Modules",
+  "terminal.integrated.env.osx": { "PYTHONPATH": "${workspaceFolder}/Modules" },
+  "python.analysis.extraPaths": ["${workspaceFolder}/Modules"],
+  "python.autoComplete.extraPaths": ["${workspaceFolder}/Modules"]
+}
