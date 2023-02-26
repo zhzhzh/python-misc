@@ -22,4 +22,7 @@ for example to execute `hello.py` under module `Hello`
 
 ```bash
 docker exec python-misc python Hello/hello.py
+
+# more examples:
+docker exec python-misc python LearnSQLALchemy/check_version.py
 ```
