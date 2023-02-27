@@ -26,3 +26,17 @@ def get_time_rotation_file_logger(
     fh.setLevel(logger_level)
     new_logger.addHandler(fh)
     return new_logger
+
+
+def get_stream_logger(logger_name: str, logger_level: int = logging.DEBUG) -> logging.Logger:
+    new_logger = logging.getLogger(logger_name)
+    new_logger.setLevel(logger_level)
+
+    logger_format = '[%(asctime)s] %(levelname)s\t[%(module)s.%(funcName)s:%(lineno)s] %(message)s'
+    formatter = logging.Formatter(logger_format)
+
+    ch = logging.StreamHandler()
+    ch.setLevel(logger_level)
+    ch.setFormatter(formatter)
+    new_logger.addHandler(ch)
+    return new_logger
