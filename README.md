@@ -1,6 +1,19 @@
 # python-misc
 
-python misc code, able to run in docker and local
+python misc code, able to run in docker and local.
+
+Python Version: 3.11
+
+```bash
+# crate the environment in local
+conda create -n python-misc python=3.11
+
+# activate the environment
+conda activate python-misc
+
+# deactivate the environment
+conda deactivate
+```
 
 ## How to build & run
 
@@ -24,5 +37,5 @@ for example to execute `hello.py` under module `Hello`
 docker exec python-misc python Hello/hello.py
 
 # more examples:
-docker exec python-misc python LearnSQLALchemy/check_version.py
+docker exec python-misc python LearnSQLALchemy/0_check_version.py
 ```

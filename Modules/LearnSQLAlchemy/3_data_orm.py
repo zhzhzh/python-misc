@@ -2,7 +2,7 @@ import os
 import sys
 from typing import List, Optional
 
-from sqlalchemy import ForeignKey, String, create_engine, select
+from sqlalchemy import ForeignKey, String, create_engine, select, union_all
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import (DeclarativeBase, Mapped, Session, aliased,
                             mapped_column, relationship)
@@ -185,6 +185,46 @@ def select_cte(engine: Engine) -> None:
             print(f"{user} {address}")
 
 
+def union_and_set_operations(engine: Engine) -> None:
+    stmt1 = select(User).where(User.name == "sandy")
+    stmt2 = select(User).where(User.name == "spongebob")
+    u = union_all(stmt1, stmt2)
+    print(u)
+    '''
+    SELECT user_account.id, user_account.name, user_account.fullname
+    FROM user_account
+    WHERE user_account.name = :name_1
+    UNION ALL
+    SELECT user_account.id, user_account.name, user_account.fullname
+    FROM user_account
+    WHERE user_account.name = :name_2
+    '''
+
+    orm_stmt = select(User).from_statement(u)
+    with Session(engine) as session:
+        for obj in session.execute(orm_stmt).scalars():
+            print(obj)
+
+
+    user_alias = aliased(User, u.subquery())
+    orm_stmt = select(user_alias).order_by(user_alias.id)
+    '''
+    SELECT anon_1.id, anon_1.name, anon_1.fullname
+    FROM (
+        SELECT user_account.id AS id, user_account.name AS name, user_account.fullname AS fullname
+        FROM user_account
+        WHERE user_account.name = %s
+        UNION ALL SELECT user_account.id AS id, user_account.name AS name, user_account.fullname AS fullname
+        FROM user_account
+        WHERE user_account.name = %s
+    ) AS anon_1
+    ORDER BY anon_1.id
+    '''
+    with Session(engine) as session:
+        for obj in session.execute(orm_stmt).scalars():
+            print(obj)
+
+
 if __name__ == '__main__':
     load_env()
     test_db = os.getenv('LOCAL_TEST_DB')
@@ -207,5 +247,6 @@ if __name__ == '__main__':
     # select_aggr_with_group_by_a_label(engine=engine)
     # select_using_aliases(engine=engine)
     # select_subquery(engine=engine)
-    select_cte(engine=engine)
+    # select_cte(engine=engine)
+    union_and_set_operations(engine=engine)
 

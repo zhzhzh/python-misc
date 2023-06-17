@@ -1,0 +1,9 @@
+{% if variable is defined %}
+    value of variable: {{ variable }}
+{% else %}
+    variable is not defined
+{% endif %}
+
+{% for row in rows %}
+    <li class="{{ loop.cycle('odd', 'even') }}">{{ row }}</li>
+{% endfor %}
