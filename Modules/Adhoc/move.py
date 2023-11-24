@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+from argparse import ArgumentParser
 from logging import Logger
 
 import pyautogui as screen
@@ -36,7 +37,7 @@ class MouseMover:
     def random_move(self, hours: int = 3, interval: int = 25) -> None:
         times = int((hours * 3600) / interval) + 1
         self.logger.info(
-            f"Running for {hours} hours, internal {interval} seconds, loop {times} times"
+            f"Running for {hours} hours, interval {interval} seconds, loop {times} times"
         )
 
         for i in range(1, times):
@@ -47,8 +48,28 @@ class MouseMover:
             time.sleep(interval)
 
 
+def get_parser() -> ArgumentParser:
+    parser = ArgumentParser(description="Mouse Mover")
+    parser.add_argument("--hours", help="set hours")
+    parser.add_argument("--interval", help="set interval in seconds")
+    return parser
+
+
 if __name__ == "__main__":
     logger = get_stream_logger(LOGGER_NAME)
+    args = get_parser().parse_args()
+    logger.info(args)
 
     mouse_mover = MouseMover(logger=logger)
-    mouse_mover.random_move()
+
+    hours = 3
+    if args.hours:
+        hours = int(args.hours)
+
+    interval = 25
+    if args.interval:
+        interval = int(args.interval)
+
+    mouse_mover.random_move(hours=hours, interval=interval)
+
+    logger.info("Done!")
