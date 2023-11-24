@@ -40,11 +40,15 @@ class MouseMover:
             f"Running for {hours} hours, interval {interval} seconds, loop {times} times"
         )
 
+        step = 10
+
         for i in range(1, times):
-            x1 = random.randint(0, self.x)
-            y1 = random.randint(0, self.y)
-            screen.moveTo(x1, y1)
-            self.logger.info(f"{i}: move to ({x1}, {y1})")
+            x_step = random.randint(-step, step)
+            y_step = random.randint(-step, step)
+            screen.move(x_step, y_step)
+            self.logger.info(
+                f"{i}: step({x_step}, {y_step}), move to {screen.position()}"
+            )
             time.sleep(interval)
 
 
