@@ -34,7 +34,7 @@ class MouseMover:
             self.logger = logger
         self.x, self.y = screen.size()
 
-    def random_move(self, hours: int = 3, interval: int = 25) -> None:
+    def random_move(self, hours: float = 3.0, interval: int = 25) -> None:
         times = int((hours * 3600) / interval) + 1
         self.logger.info(
             f"Running for {hours} hours, interval {interval} seconds, loop {times} times"
@@ -47,7 +47,7 @@ class MouseMover:
             y_step = random.randint(-step, step)
             screen.move(x_step, y_step)
             self.logger.info(
-                f"{i}: step({x_step}, {y_step}), move to {screen.position()}"
+                f"{i} of {times}: step({x_step}, {y_step}), move to {screen.position()}"
             )
             time.sleep(interval)
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     hours = 3
     if args.hours:
-        hours = int(args.hours)
+        hours = float(args.hours)
 
     interval = 25
     if args.interval:
