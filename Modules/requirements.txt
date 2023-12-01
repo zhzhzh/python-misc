@@ -9,3 +9,4 @@ mysqlclient==2.1.1
 smartsheet-python-sdk==3.0.0
 openpyxl==3.1.1
 PyAutoGUI==0.9.54
+ipython==8.18.1
