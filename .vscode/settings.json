@@ -21,4 +21,5 @@
   "python.autoComplete.extraPaths": [
     "${workspaceFolder}/Modules"
   ],
+  "python.analysis.autoImportCompletions": true
 }

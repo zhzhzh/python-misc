@@ -11,7 +11,9 @@ def get_time_rotation_file_logger(
         logger_level = logging.DEBUG
     new_logger.setLevel(logger_level)
 
-    logger_format = '[%(asctime)s] %(levelname)s\t[%(module)s.%(funcName)s:%(lineno)s] %(message)s'
+    logger_format = (
+        "[%(asctime)s] %(levelname)s\t[%(module)s.%(funcName)s:%(lineno)s] %(message)s"
+    )
     formatter = logging.Formatter(logger_format)
 
     ch = logging.StreamHandler()
@@ -20,7 +22,7 @@ def get_time_rotation_file_logger(
     new_logger.addHandler(ch)
 
     fh = logging.handlers.TimedRotatingFileHandler(
-        log_file, when='midnight', backupCount=backup_cnt
+        log_file, when="midnight", backupCount=backup_cnt
     )
     fh.setFormatter(formatter)
     fh.setLevel(logger_level)
@@ -28,11 +30,15 @@ def get_time_rotation_file_logger(
     return new_logger
 
 
-def get_stream_logger(logger_name: str, logger_level: int = logging.DEBUG) -> logging.Logger:
+def get_stream_logger(
+    logger_name: str, logger_level: int = logging.DEBUG
+) -> logging.Logger:
     new_logger = logging.getLogger(logger_name)
     new_logger.setLevel(logger_level)
 
-    logger_format = '[%(asctime)s] %(levelname)s\t[%(module)s.%(funcName)s:%(lineno)s] %(message)s'
+    logger_format = (
+        "[%(asctime)s] %(levelname)s\t[%(module)s.%(funcName)s:%(lineno)s] %(message)s"
+    )
     formatter = logging.Formatter(logger_format)
 
     ch = logging.StreamHandler()
