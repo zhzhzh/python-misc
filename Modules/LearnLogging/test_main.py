@@ -1,7 +1,8 @@
 import logging
 from logging.config import dictConfig
 
-from LearnLogging.my_class import MyClass
+from LearnLogging.my_class import MyClass1, MyClass2
+from LearnLogging.my_class_new import MyClass3, MyClass4
 from logging_config import LOGGING
 
 
@@ -47,7 +48,10 @@ if __name__ == "__main__":
     logger.info("info in main")
     logger.error("error in main")
 
-    class1 = MyClass()
+    class1 = MyClass1()
+    class2 = MyClass2()
+    class3 = MyClass3()
+    class4 = MyClass4()
     print_logger(logging.getLogger())
     print_logger(logging.getLogger("LearnLogging"))
     print_logger(logging.getLogger("LearnLogging.my_class"))
