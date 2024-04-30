@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 # env files
-.env.docker
-.env.local
+.docker.env
+.local.env

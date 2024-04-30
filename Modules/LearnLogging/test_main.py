@@ -1,9 +1,10 @@
 import logging
-from logging.config import dictConfig
 
 from LearnLogging.my_class import MyClass1, MyClass2
 from LearnLogging.my_class_new import MyClass3, MyClass4
-from logging_config import LOGGING
+from Utils.logging_config import config_local_logger
+
+logger = logging.getLogger(__name__)
 
 
 def print_logger(logger: logging.Logger):
@@ -18,6 +19,7 @@ def print_logger(logger: logging.Logger):
 
 
 if __name__ == "__main__":
+    config_local_logger()
     logger_name = "test"
     test_logger = logging.getLogger(logger_name)
 
@@ -35,7 +37,6 @@ if __name__ == "__main__":
     test_logger.addHandler(ch)
     test_logger.info("test_logger: add a StreamHandler.")
 
-    dictConfig(LOGGING)
     # print("=========")
     # print_logger(logging.getLogger())
     # print_logger(logging.getLogger(logger_name))

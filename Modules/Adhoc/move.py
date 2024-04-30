@@ -1,42 +1,46 @@
 import logging
+import logging.config
 import random
 import time
 from argparse import ArgumentParser
-from logging import Logger
 
 import pyautogui as screen
 
-LOGGER_NAME = "mouse_mover"
+logger = logging.getLogger(__name__)
 
-
-def get_stream_logger(logger_name: str, logger_level: int = logging.DEBUG) -> Logger:
-    new_logger = logging.getLogger(logger_name)
-    new_logger.setLevel(logger_level)
-
-    logger_format = (
-        "[%(asctime)s] %(levelname)s\t[%(module)s.%(funcName)s:%(lineno)s] %(message)s"
-    )
-    formatter = logging.Formatter(logger_format)
-
-    ch = logging.StreamHandler()
-    ch.setLevel(logger_level)
-    ch.setFormatter(formatter)
-    new_logger.addHandler(ch)
-    new_logger.info(f"new logger: {logger_name}")
-    return new_logger
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[%(asctime)s] %(levelname)s [%(name)s:%(funcName)s:%(lineno)s] %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "root": {"handlers": ["console"], "level": "INFO"},
+        "__main__": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}
 
 
 class MouseMover:
-    def __init__(self, logger: Logger) -> None:
-        if logger is None:
-            self.logger = get_stream_logger(LOGGER_NAME)
-        else:
-            self.logger = logger
+    def __init__(self) -> None:
         self.x, self.y = screen.size()
 
     def random_move(self, hours: float = 3.0, interval: int = 25) -> None:
         times = int((hours * 3600) / interval) + 1
-        self.logger.info(
+        logger.info(
             f"Running for {hours} hours, interval {interval} seconds, loop {times} times"
         )
 
@@ -46,7 +50,7 @@ class MouseMover:
             x_step = random.randint(-step, step)
             y_step = random.randint(-step, step)
             screen.move(x_step, y_step)
-            self.logger.info(
+            logger.info(
                 f"{i} of {times}: step({x_step}, {y_step}), move to {screen.position()}"
             )
             time.sleep(interval)
@@ -60,11 +64,12 @@ def get_parser() -> ArgumentParser:
 
 
 if __name__ == "__main__":
-    logger = get_stream_logger(LOGGER_NAME)
+    logging.config.dictConfig(LOGGING)
+
     args = get_parser().parse_args()
     logger.info(args)
 
-    mouse_mover = MouseMover(logger=logger)
+    mouse_mover = MouseMover()
 
     hours = 3
     if args.hours:
