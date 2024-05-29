@@ -11,9 +11,11 @@
   "black-formatter.args": [
     "--line-length=88"
   ],
-  "python.pythonPath": "${workspaceFolder}/Modules",
   "terminal.integrated.env.osx": {
     "PYTHONPATH": "${workspaceFolder}/Modules"
+  },
+  "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${env:PYTHONPATH};${workspaceFolder}/Modules"
   },
   "python.analysis.extraPaths": [
     "${workspaceFolder}/Modules"
