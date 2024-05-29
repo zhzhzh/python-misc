@@ -131,3 +131,7 @@ dmypy.json
 # env files
 .docker.env
 .local.env
+
+# Logs
+*.log
+*.log.*
