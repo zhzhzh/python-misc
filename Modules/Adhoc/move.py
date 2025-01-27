@@ -36,7 +36,8 @@ LOGGING = {
 
 class MouseMover:
     def __init__(self) -> None:
-        self.x, self.y = screen.size()
+        self.x_width, self.y_height = screen.size()
+        logger.info(f"x_width: {self.x_width}, y_height: {self.y_height}")
 
     def random_move(self, hours: float = 3.0, interval: int = 25) -> None:
         times = int((hours * 3600) / interval) + 1
@@ -47,13 +48,24 @@ class MouseMover:
         step = 10
 
         for i in range(1, times):
-            x_step = random.randint(-step, step)
-            y_step = random.randint(-step, step)
+            current_pos = screen.position()
+            x_now = current_pos.x
+            y_now = current_pos.y
+            x_new = self.random_next(x=int(x_now), step=step, size=self.x_width)
+            y_new = self.random_next(x=int(y_now), step=step, size=self.x_width)
+            x_step = x_new - x_now
+            y_step = y_new - y_now
             screen.move(x_step, y_step)
             logger.info(
-                f"{i} of {times}: step({x_step}, {y_step}), move to {screen.position()}"
+                f"{i} of {times}: step({x_step}, {y_step}), move from {current_pos} to {screen.position()}"
             )
             time.sleep(interval)
+
+    def random_next(self, x: int, step: int, size: int) -> int:
+        x_min = max(step, x - step)
+        x_max = min(x + step, size - step)
+        x_next = random.randint(x_min, x_max)
+        return x_next
 
 
 def get_parser() -> ArgumentParser:
