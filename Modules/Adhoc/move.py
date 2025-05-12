@@ -48,24 +48,34 @@ class MouseMover:
         step = 10
 
         for i in range(1, times):
+            # get current position
             current_pos = screen.position()
             x_now = current_pos.x
             y_now = current_pos.y
-            x_new = self.random_next(x=int(x_now), step=step, size=self.x_width)
-            y_new = self.random_next(x=int(y_now), step=step, size=self.x_width)
-            x_step = x_new - x_now
-            y_step = y_new - y_now
-            screen.move(x_step, y_step)
+
+            # rand steps and get the new position
+            x_step = self.random_step(x=int(x_now), step=step, size=self.x_width)
+            y_step = self.random_step(x=int(y_now), step=step, size=self.y_height)
+            x_new = x_now + x_step
+            y_new = y_now + y_step
             logger.info(
-                f"{i} of {times}: step({x_step}, {y_step}), move from {current_pos} to {screen.position()}"
+                f"before move ({x_now}, {y_now}), steps ({x_step}, {y_step}), to position ({x_new}, {y_new})"
+            )
+            screen.moveTo(x_new, y_new)
+            logger.info(
+                f"{i} of {times}: after move step({x_step}, {y_step}), move from {current_pos} to {screen.position()}"
             )
             time.sleep(interval)
 
-    def random_next(self, x: int, step: int, size: int) -> int:
-        x_min = max(step, x - step)
-        x_max = min(x + step, size - step)
-        x_next = random.randint(x_min, x_max)
-        return x_next
+    def random_step(self, x: int, step: int, size: int) -> int:
+        x_step = random.randint(-step, step)
+        x_new = x + x_step
+        if x_new <= 0 or x_new >= size:
+            logger.info(
+                f"Might out of range ({x_new}/ size {size}) after move {x_step}, use other direction"
+            )
+            x_step = -x_step
+        return x_step
 
 
 def get_parser() -> ArgumentParser:
