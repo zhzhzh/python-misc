@@ -12,7 +12,7 @@ fi
 echo "ARCH=$ARCH PLATFORM=$PLATFORM"
 
 # Get latest patch version for milestone 145
-VER="$(curl -fsSL https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_145)"
+VER="$(curl -fsSL https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_146)"
 echo "ChromeDriver milestone 145 version: $VER"
 
 # Download + install
