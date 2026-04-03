@@ -2,6 +2,13 @@
     "recommendations": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-python.black-formatter"
+        "ms-python.black-formatter",
+        "charliermarsh.ruff"
+    ],
+    "unwantedRecommendations": [
+        "ms-python.autppep8",
+        "ms-python.flake8",
+        "ms-python.pylint",
+        "ms-python.isort"
     ]
 }
