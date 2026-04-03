@@ -1,28 +1,28 @@
 import os
 import sys
-from typing import List, Optional
 
 from sqlalchemy import ForeignKey, String, create_engine, select
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import (DeclarativeBase, Mapped, Session, mapped_column,
-                            relationship)
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 from Utils.env_util import load_env
 
 
 class Base(DeclarativeBase):
     pass
 
+
 class User(Base):
     __tablename__ = "user_account"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30))
-    fullname: Mapped[Optional[str]] = mapped_column(String(60))
+    fullname: Mapped[str | None] = mapped_column(String(60))
 
-    addresses: Mapped[List["Address"]] = relationship(back_populates="user")
+    addresses: Mapped[list["Address"]] = relationship(back_populates="user")
 
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, name={self.name!r}, fullname={self.fullname!r})"
+
 
 class Address(Base):
     __tablename__ = "address"
@@ -44,7 +44,7 @@ def inserting_rows(engine: Engine) -> None:
     print(squidward)
     # User(id=None, name='squidward', fullname='Squidward Tentacles')
     with Session(engine) as session:
-    # session = Session(engine)
+        # session = Session(engine)
         session.add(squidward)
         session.add(krabs)
         print(session.new)
@@ -60,7 +60,7 @@ def inserting_rows(engine: Engine) -> None:
         some_squidward = session.get(User, squidward.id)
         print(some_squidward)
         # User(id=45, name='squidward', fullname='Squidward Tentacles')
-        print(f'some_squidward is squidward: {some_squidward is squidward}')
+        print(f"some_squidward is squidward: {some_squidward is squidward}")
 
         session.commit()
 
@@ -80,14 +80,14 @@ def updating_orm_objects(engine: Engine) -> None:
         sandy.fullname = "Sandy Squirrel"
         print(session.dirty)
         # IdentitySet([User(id=5, name='sandy', fullname='Sandy Squirrel')])
-        print(f'sandy in session.dirty: {sandy in session.dirty}')
+        print(f"sandy in session.dirty: {sandy in session.dirty}")
 
         # When the Session next emits a flush, an UPDATE will be emitted that updates this value in the database.
         # As mentioned previously, a flush occurs automatically before we emit any SELECT, using a behavior known as autoflush.
         sandy_fullname = session.execute(select(User.fullname).where(User.id == 5)).scalar_one()
         print(sandy_fullname)
 
-        print(f'sandy in session.dirty: {sandy in session.dirty}')
+        print(f"sandy in session.dirty: {sandy in session.dirty}")
 
         # no actual DB change since not commited
 
@@ -97,12 +97,12 @@ def deleting_orm_objects(engine: Engine) -> None:
         patrick = session.get(User, 6)
         print(patrick)
         # User(id=6, name='patrick', fullname='Patrick McStar')
-        print(f'patrick in session: {patrick in session}')
+        print(f"patrick in session: {patrick in session}")
 
         session.delete(patrick)
         session.execute(select(User).where(User.name == "patrick")).first()
 
-        print(f'patrick in session: {patrick in session}')
+        print(f"patrick in session: {patrick in session}")
 
         # no actual DB change since not commited
 
@@ -115,40 +115,38 @@ def rolling_back(engine: Engine) -> None:
         sandy.fullname = "Sandy Squirrel"
         print(session.dirty)
         # IdentitySet([User(id=5, name='sandy', fullname='Sandy Squirrel')])
-        print(f'sandy in session.dirty: {sandy in session.dirty}')
+        print(f"sandy in session.dirty: {sandy in session.dirty}")
 
         # When the Session next emits a flush, an UPDATE will be emitted that updates this value in the database.
         # As mentioned previously, a flush occurs automatically before we emit any SELECT, using a behavior known as autoflush.
         sandy_fullname = session.execute(select(User.fullname).where(User.id == 5)).scalar_one()
         print(sandy_fullname)
 
-        print(f'sandy in session.dirty: {sandy in session.dirty}')
+        print(f"sandy in session.dirty: {sandy in session.dirty}")
 
         session.rollback()
-        print(f'sandy.__dict__: {sandy.__dict__}')
+        print(f"sandy.__dict__: {sandy.__dict__}")
         # sandy.__dict__: {'_sa_instance_state': <sqlalchemy.orm.state.InstanceState object at 0x102649910>}
-        print(f'sandy.fullname: {sandy.fullname}')
-        print(f'sandy.__dict__: {sandy.__dict__}')
+        print(f"sandy.fullname: {sandy.fullname}")
+        print(f"sandy.__dict__: {sandy.__dict__}")
         # {'_sa_instance_state': <sqlalchemy.orm.state.InstanceState object at 0x102649910>, 'id': 5, 'name': 'sandy', 'fullname': 'Sandy Cheeks'}
-
 
         patrick = session.get(User, 6)
         print(patrick)
         # User(id=6, name='patrick', fullname='Patrick McStar')
-        print(f'patrick in session: {patrick in session}')
+        print(f"patrick in session: {patrick in session}")
 
         session.delete(patrick)
         session.execute(select(User).where(User.name == "patrick")).first()
 
-        print(f'patrick in session: {patrick in session}')
+        print(f"patrick in session: {patrick in session}")
         session.rollback()
-        print(f'patrick in session: {patrick in session}')
+        print(f"patrick in session: {patrick in session}")
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     load_env()
-    test_db = os.getenv('LOCAL_TEST_DB')
+    test_db = os.getenv("LOCAL_TEST_DB")
     if test_db is None:
         sys.exit(1)
 

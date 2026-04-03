@@ -3,8 +3,7 @@ import sys
 from datetime import datetime
 
 from pandas import DataFrame
-from sqlalchemy import (Boolean, Index, String, create_engine, distinct, func,
-                        select, text, tuple_)
+from sqlalchemy import Boolean, Index, String, create_engine, distinct, func, select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 from sqlalchemy.schema import FetchedValue
@@ -35,10 +34,10 @@ class RADDKeyUsageTable(Base):
     insert_ts: Mapped[datetime] = mapped_column(server_default=text("CURRENT_TIMESTAMP"))
 
     __table_args__ = (
-        Index('idx_radd_key_usage', "ruleapp", "ruleset", "baseline"),
+        Index("idx_radd_key_usage", "ruleapp", "ruleset", "baseline"),
         {
-            'mysql_engine': 'InnoDB',
-            'mysql_charset': 'utf8mb4',
+            "mysql_engine": "InnoDB",
+            "mysql_charset": "utf8mb4",
         },
     )
 
@@ -62,13 +61,16 @@ class RADDUsageReportTable(Base):
     baseline2: Mapped[str] = mapped_column(String(32))
     reported: Mapped[bool] = mapped_column(Boolean, server_default=text("FALSE"))
     insert_ts: Mapped[datetime] = mapped_column(server_default=text("CURRENT_TIMESTAMP"))
-    mod_ts: Mapped[datetime] = mapped_column(server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"), server_onupdate=FetchedValue())
+    mod_ts: Mapped[datetime] = mapped_column(
+        server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"),
+        server_onupdate=FetchedValue(),
+    )
 
     __table_args__ = (
-        Index('idx_radd_usage_report', "ruleapp", "ruleset", "baseline1", "baseline2", unique=True),
+        Index("idx_radd_usage_report", "ruleapp", "ruleset", "baseline1", "baseline2", unique=True),
         {
-            'mysql_engine': 'InnoDB',
-            'mysql_charset': 'utf8mb4',
+            "mysql_engine": "InnoDB",
+            "mysql_charset": "utf8mb4",
         },
     )
 
@@ -80,8 +82,15 @@ class RADDUsageReportTable(Base):
         )
 
     @staticmethod
-    def insert_not_exists(engine: Engine, ruleapp: str, checkpoint: str, baseline1: str, baseline2: str, reported: bool = False) -> bool:
-         with Session(engine) as session:
+    def insert_not_exists(
+        engine: Engine,
+        ruleapp: str,
+        checkpoint: str,
+        baseline1: str,
+        baseline2: str,
+        reported: bool = False,
+    ) -> bool:
+        with Session(engine) as session:
             stmt = (
                 select(RADDUsageReportTable)
                 .where(RADDUsageReportTable.ruleapp == ruleapp)
@@ -98,7 +107,7 @@ class RADDUsageReportTable(Base):
                     ruleset=checkpoint,
                     baseline1=baseline1,
                     baseline2=baseline2,
-                    reported=reported
+                    reported=reported,
                 )
                 session.add(new_record)
                 session.commit()
@@ -109,7 +118,7 @@ class RADDUsageReportTable(Base):
 
 def emit_create_table_ddl(engine: Engine) -> None:
     Base.metadata.create_all(engine)
-    '''
+    """
     CREATE TABLE radd_key_usage (
         id INTEGER NOT NULL AUTO_INCREMENT,
         ruleapp VARCHAR(64) NOT NULL,
@@ -142,19 +151,22 @@ def emit_create_table_ddl(engine: Engine) -> None:
         PRIMARY KEY (id)
     ) CHARSET=utf8mb4 ENGINE=InnoDB
     CREATE UNIQUE INDEX idx_radd_usage_report ON radd_usage_report (ruleapp, ruleset, baseline1, baseline2)
-    '''
+    """
+
 
 def select_usage_cnt(engine: Engine):
-    ruleapp = 'riskunifiedpaymentserv'
-    checkpoint = 'ConsolidatedFunding'
-    baseline = '20230228_173215'
+    ruleapp = "riskunifiedpaymentserv"
+    checkpoint = "ConsolidatedFunding"
+    baseline = "20230228_173215"
 
     with Session(engine) as session:
         stmt = (
             select(
                 RADDKeyUsageTable.baseline,
                 func.count(distinct(RADDKeyUsageTable.rule_id)).label("rule_cnt"),
-                func.count(distinct(text('radd_name, key1, key2, key3, key4'))).label("radd_usage_cnt")
+                func.count(distinct(text("radd_name, key1, key2, key3, key4"))).label(
+                    "radd_usage_cnt"
+                ),
             )
             .where(RADDKeyUsageTable.ruleapp == ruleapp)
             .where(RADDKeyUsageTable.ruleset == checkpoint)
@@ -162,14 +174,15 @@ def select_usage_cnt(engine: Engine):
         )
         result = session.execute(stmt).one()
         if result is not None:
-            print(f'{type(result)}, {result._asdict()}, {result._mapping}, {result.tuple()}')
+            print(f"{type(result)}, {result._asdict()}, {result._mapping}, {result.tuple()}")
         else:
-            print(f'Get {result} for query: {stmt}')
+            print(f"Get {result} for query: {stmt}")
+
 
 def load_radd_usage(engine: Engine):
-    ruleapp = 'riskunifiedpaymentserv'
-    checkpoint = 'ConsolidatedFunding'
-    baseline = '20230228_173215'
+    ruleapp = "riskunifiedpaymentserv"
+    checkpoint = "ConsolidatedFunding"
+    baseline = "20230228_173215"
 
     with Session(engine) as session:
         stmt = (
@@ -179,7 +192,7 @@ def load_radd_usage(engine: Engine):
                 RADDKeyUsageTable.key2,
                 RADDKeyUsageTable.key3,
                 RADDKeyUsageTable.key4,
-                func.group_concat(RADDKeyUsageTable.rule_id).label("rule_ids")
+                func.group_concat(RADDKeyUsageTable.rule_id).label("rule_ids"),
             )
             .where(RADDKeyUsageTable.ruleapp == ruleapp)
             .where(RADDKeyUsageTable.ruleset == checkpoint)
@@ -189,43 +202,43 @@ def load_radd_usage(engine: Engine):
                 RADDKeyUsageTable.key1,
                 RADDKeyUsageTable.key2,
                 RADDKeyUsageTable.key3,
-                RADDKeyUsageTable.key4
+                RADDKeyUsageTable.key4,
             )
         )
         results = session.execute(stmt)
         df = DataFrame(results.all())
-        df.to_excel('data.xlsx')
+        df.to_excel("data.xlsx")
         for result in results:
             # print(f'{type(result)}, {result._asdict()}, {result._mapping}, {result.tuple()}')
             print(result)
 
 
 def insert_report_record(engine: Engine):
-    ruleapp = 'riskunifiedpaymentserv'
-    checkpoint = 'ConsolidatedFunding'
-    baseline1 = '20230226_232601'
-    baseline2 = '20230228_173215'
+    ruleapp = "riskunifiedpaymentserv"
+    checkpoint = "ConsolidatedFunding"
+    baseline1 = "20230226_232601"
+    baseline2 = "20230228_173215"
     inserted = RADDUsageReportTable.insert_not_exists(
         engine=engine,
         ruleapp=ruleapp,
         checkpoint=checkpoint,
         baseline1=baseline1,
-        baseline2=baseline2
+        baseline2=baseline2,
     )
 
     print(inserted)
-
 
 
 def select_data(engine: Engine):
     with Session(engine) as session:
         stmt = select(RADDKeyUsageTable).where(RADDKeyUsageTable.id == 1)
         result = session.scalar(stmt)
-        print(f'{type(result)}, {result}')
+        print(f"{type(result)}, {result}")
 
-if __name__ == '__main__':
-    load_env('.env.local')
-    test_db = os.getenv('LOCAL_TEST_DB')
+
+if __name__ == "__main__":
+    load_env(".env.local")
+    test_db = os.getenv("LOCAL_TEST_DB")
     # rules_db = os.getenv('RULES_DB_2_0')
     if test_db is None:
         sys.exit(1)

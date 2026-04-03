@@ -1,5 +1,5 @@
 # https://docs.sqlalchemy.org/en/20/tutorial/index.html#unified-tutorial
-# Current: https://docs.sqlalchemy.org/en/20/tutorial/dbapi_transactions.html 
+# Current: https://docs.sqlalchemy.org/en/20/tutorial/dbapi_transactions.html
 import os
 import sys
 
@@ -23,7 +23,7 @@ def core_with_text_commit_as_you_go(engine: Engine) -> None:
         conn.execute(
             text("INSERT INTO some_table (x, y) VALUES (:x, :y)"),
             [{"x": 1, "y": 1}, {"x": 2, "y": 4}],
-            )
+        )
         conn.commit()
 
 
@@ -49,7 +49,7 @@ def fetch_rows(engine: Engine) -> None:
             # print(f"row.t: {row.t}")
             # print(f"row.tuple(): {row.tuple()}")
             print(f"x: {row.x}  y: {row.y}")
-        
+
         result = conn.execute(text("select x, y from some_table"))
         for dict_row in result.mappings():
             print(dict_row)
@@ -73,6 +73,7 @@ def sending_multiple_parameters(engine: Engine) -> None:
         )
         conn.commit()
 
+
 def orm_session(engine: Engine) -> None:
     # ommit as you go
     stmt = text("SELECT x, y FROM some_table WHERE y > :y ORDER BY x, y")
@@ -84,16 +85,16 @@ def orm_session(engine: Engine) -> None:
 
 def orm_session_commit(engine: Engine) -> None:
     with Session(engine) as session:
-        result = session.execute(
+        session.execute(
             text("UPDATE some_table SET y=:y WHERE x=:x"),
             [{"x": 9, "y": 11}, {"x": 13, "y": 15}],
         )
         session.commit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     load_env()
-    test_db = os.getenv('LOCAL_TEST_DB')
+    test_db = os.getenv("LOCAL_TEST_DB")
     if test_db is None:
         sys.exit(1)
 

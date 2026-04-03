@@ -1,30 +1,30 @@
 import os
 import sys
-from typing import List, Optional
 
 from sqlalchemy import ForeignKey, String, create_engine, select
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import (DeclarativeBase, Mapped, Session, mapped_column,
-                            relationship)
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 from Utils.env_util import load_env
 
 
 class Base(DeclarativeBase):
     pass
 
+
 class User(Base):
     __tablename__ = "user_account"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30))
-    fullname: Mapped[Optional[str]]
+    fullname: Mapped[str | None]
 
-    addresses: Mapped[List["Address"]] = relationship(
+    addresses: Mapped[list["Address"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, name={self.name!r}, fullname={self.fullname!r})"
+
 
 class Address(Base):
     __tablename__ = "address"
@@ -114,7 +114,7 @@ def some_deletes(engine: Engine) -> None:
 
         sandy = session.get(User, 5)
         print(sandy)
-        sandy.addresses.remove(sandy_address) # type: ignore
+        sandy.addresses.remove(sandy_address)  # type: ignore
 
         session.flush()
         # DELETE FROM address WHERE address.id = %s
@@ -125,9 +125,9 @@ def some_deletes(engine: Engine) -> None:
         session.flush()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     load_env()
-    test_db = os.getenv('LOCAL_TEST_DB')
+    test_db = os.getenv("LOCAL_TEST_DB")
     if test_db is None:
         sys.exit(1)
 
@@ -139,4 +139,3 @@ if __name__ == '__main__':
     # select_with_join(engine=engine)
     # make_changes(engine=engine)
     some_deletes(engine=engine)
-

@@ -25,9 +25,7 @@ if __name__ == "__main__":
 
     test_logger.setLevel(logging.DEBUG)
 
-    logger_format = (
-        "[%(asctime)s] %(levelname)s\t[%(module)s.%(funcName)s:%(lineno)s] %(message)s"
-    )
+    logger_format = "[%(asctime)s] %(levelname)s\t[%(module)s.%(funcName)s:%(lineno)s] %(message)s"
     formatter = logging.Formatter(logger_format)
 
     # add the StreamHandler

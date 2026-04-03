@@ -1,8 +1,20 @@
 import os
 import sys
 
-from sqlalchemy import (Column, ForeignKey, Integer, MetaData, String, Table,
-                        create_engine, delete, func, insert, select, update)
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    create_engine,
+    delete,
+    func,
+    insert,
+    select,
+    update,
+)
 from sqlalchemy.engine import Engine
 from Utils.env_util import load_env
 
@@ -27,9 +39,9 @@ address_table = Table(
 
 def core_insert(engine: Engine) -> None:
     stmt = insert(user_table).values(name="spongebob", fullname="Spongebob Squarepants")
-    print(stmt) # INSERT INTO user_account (name, fullname) VALUES (:name, :fullname)
+    print(stmt)  # INSERT INTO user_account (name, fullname) VALUES (:name, :fullname)
     compiled = stmt.compile()
-    print(compiled.params) # {'name': 'spongebob', 'fullname': 'Spongebob Squarepants'}
+    print(compiled.params)  # {'name': 'spongebob', 'fullname': 'Spongebob Squarepants'}
     with engine.connect() as conn:
         result = conn.execute(stmt)
         conn.commit()
@@ -38,7 +50,9 @@ def core_insert(engine: Engine) -> None:
 
 
 def core_insert_many(engine: Engine) -> None:
-    print(insert(user_table)) # INSERT INTO user_account (id, name, fullname) VALUES (:id, :name, :fullname)
+    print(
+        insert(user_table)
+    )  # INSERT INTO user_account (id, name, fullname) VALUES (:id, :name, :fullname)
     with engine.connect() as conn:
         result = conn.execute(
             insert(user_table),
@@ -54,18 +68,17 @@ def core_insert_many(engine: Engine) -> None:
 
 def core_insert_deeper(engine: Engine) -> None:
     from sqlalchemy import bindparam, select
+
     scalar_subq = (
-        select(user_table.c.id)
-        .where(user_table.c.name == bindparam("username"))
-        .scalar_subquery()
+        select(user_table.c.id).where(user_table.c.name == bindparam("username")).scalar_subquery()
     )
 
     with engine.connect() as conn:
-        '''
+        """
         INSERT INTO address (user_id, email_address) VALUES (
             (SELECT user_account.id FROM user_account WHERE user_account.name = %s), %s)
-        '''
-        result = conn.execute(
+        """
+        conn.execute(
             insert(address_table).values(user_id=scalar_subq),
             [
                 {
@@ -80,34 +93,30 @@ def core_insert_deeper(engine: Engine) -> None:
 
 
 def insert_default(engine: Engine) -> None:
-    print(insert(user_table).values().compile(engine)) # INSERT INTO user_account () VALUES ()
+    print(insert(user_table).values().compile(engine))  # INSERT INTO user_account () VALUES ()
 
 
 def insert_returning(engine: Engine) -> None:
-    insert_stmt = insert(address_table).returning(
-        address_table.c.id, address_table.c.email_address
-    )
+    insert_stmt = insert(address_table).returning(address_table.c.id, address_table.c.email_address)
     print(insert_stmt)
-    '''
+    """
     INSERT INTO address (id, user_id, email_address)
     VALUES (:id, :user_id, :email_address)
     RETURNING address.id, address.email_address
-    '''
+    """
 
 
 def insert_from_select(engine: Engine) -> None:
     select_stmt = select(user_table.c.id, user_table.c.name + "@aol.com")
-    insert_stmt = insert(address_table).from_select(
-        ["user_id", "email_address"], select_stmt
-    )
+    insert_stmt = insert(address_table).from_select(["user_id", "email_address"], select_stmt)
     print(insert_stmt.returning(address_table.c.id, address_table.c.email_address).compile(engine))
-    '''
+    """
     INSERT INTO address (user_id, email_address)
         SELECT user_account.id, concat(user_account.name, %s) AS anon_1
         FROM user_account
     RETURNING address.id, address.email_address
-    '''
-    stmt = insert_stmt.returning(address_table.c.id, address_table.c.email_address)
+    """
+    insert_stmt.returning(address_table.c.id, address_table.c.email_address)
     with engine.connect() as conn:
         result = conn.execute(insert_stmt)
         conn.commit()
@@ -118,11 +127,11 @@ def insert_from_select(engine: Engine) -> None:
 def select_statement(engine: Engine) -> None:
     stmt = select(user_table).where(user_table.c.name == "spongebob")
     print(stmt.compile(engine))
-    '''
+    """
     SELECT user_account.id, user_account.name, user_account.fullname
     FROM user_account
     WHERE user_account.name = %s
-    '''
+    """
     with engine.connect() as conn:
         for row in conn.execute(stmt):
             print(row)
@@ -131,19 +140,18 @@ def select_statement(engine: Engine) -> None:
 def select_from(engine: Engine) -> None:
     print(select(user_table))
     print(select(user_table.c.name, user_table.c.fullname))
-    print(select(user_table.c["name", "fullname"]))
+    print(select(user_table.c["name", "fullname"]))  # type: ignore
     with engine.connect() as conn:
         for row in conn.execute(select(user_table)):
             print(row)
 
 
 def select_from_lable_sql_expressions(engine: Engine) -> None:
-    from sqlalchemy import cast, func
-    '''
+    """
     SELECT concat(%s, user_account.name) AS username
     FROM user_account
     ORDER BY user_account.name
-    '''
+    """
     stmt = select(
         ("Username: " + user_table.c.name).label("username"),
     ).order_by(user_table.c.name)
@@ -154,11 +162,13 @@ def select_from_lable_sql_expressions(engine: Engine) -> None:
 
 def select_with_textual_column_expressions(engine: Engine) -> None:
     from sqlalchemy import text
+
     stmt = select(text("'some phrase'"), user_table.c.name).order_by(user_table.c.name)
     with engine.connect() as conn:
         print(conn.execute(stmt).all())
 
     from sqlalchemy import literal_column
+
     stmt = select(literal_column("'some phrase'").label("p"), user_table.c.name).order_by(
         user_table.c.name
     )
@@ -168,23 +178,23 @@ def select_with_textual_column_expressions(engine: Engine) -> None:
 
 
 def select_where(engine: Engine) -> None:
-    print('\n')
+    print("\n")
     print(user_table.c.name == "squidward")
-    print('\n')
+    print("\n")
     print(address_table.c.user_id > 10)
-    print('\n')
+    print("\n")
     print(select(user_table).where(user_table.c.name == "squidward"))
 
-    print('\n')
+    print("\n")
     print(
         select(address_table.c.email_address)
         .where(user_table.c.name == "squidward")
         .where(address_table.c.user_id == user_table.c.id)
     )
 
-    print('\n')
+    print("\n")
     print(
-    select(address_table.c.email_address).where(
+        select(address_table.c.email_address).where(
             user_table.c.name == "squidward",
             address_table.c.user_id == user_table.c.id,
         )
@@ -192,29 +202,29 @@ def select_where(engine: Engine) -> None:
 
 
 def select_explicit_from_and_join(engine: Engine) -> None:
-    print('\n')
+    print("\n")
     print(select(user_table.c.name))
-    print('\n')
+    print("\n")
     print(select(user_table.c.name, address_table.c.email_address))
 
-    print('\n')
+    print("\n")
     print(
         select(user_table.c.name, address_table.c.email_address).join_from(
             user_table, address_table
         )
     )
 
-    print('\n')
+    print("\n")
     print(select(user_table.c.name, address_table.c.email_address).join(address_table))
 
-    print('\n')
+    print("\n")
     print(select(address_table.c.email_address).select_from(user_table).join(address_table))
-    '''
+    """
     SELECT address.email_address
     FROM user_account JOIN address ON user_account.id = address.user_id
-    '''
+    """
 
-    print('\n')
+    print("\n")
     print(select(func.count("*")).select_from(user_table))
 
 
@@ -224,45 +234,48 @@ def select_join_on(engine: Engine) -> None:
         .select_from(user_table)
         .join(address_table, user_table.c.id == address_table.c.user_id)
     )
-    '''
+    """
     SELECT address.email_address
     FROM user_account JOIN address ON user_account.id = address.user_id
-    '''
+    """
+
 
 def select_outer_full_join(engine: Engine) -> None:
-    print('\n')
+    print("\n")
     # There is also a method Select.outerjoin() that is equivalent to using .join(..., isouter=True).
     print(select(user_table).join(address_table, isouter=True))
-    '''
+    """
     SELECT user_account.id, user_account.name, user_account.fullname
     FROM user_account LEFT OUTER JOIN address ON user_account.id = address.user_id
-    '''
+    """
 
-    print('\n')
+    print("\n")
     print(select(user_table).join(address_table, full=True))
-    '''
+    """
     SELECT user_account.id, user_account.name, user_account.fullname
     FROM user_account FULL OUTER JOIN address ON user_account.id = address.user_id
-    '''
+    """
+
 
 def select_order_by(engine: Engine) -> None:
     print(select(user_table).order_by(user_table.c.name))
-    '''
+    """
     SELECT user_account.id, user_account.name, user_account.fullname
     FROM user_account ORDER BY user_account.name
-    '''
+    """
+
 
 def select_aggr_with_group_by(engine: Engine) -> None:
     count_fn = func.count(user_table.c.id)
     print(count_fn)
 
     with engine.connect() as conn:
-        '''
+        """
         SELECT user_account.name, count(address.id) AS count
         FROM user_account INNER JOIN address ON user_account.id = address.user_id
         GROUP BY user_account.name
         HAVING count(address.id) > %s
-        '''
+        """
         result = conn.execute(
             select(user_table.c.name, func.count(address_table.c.id).label("count"))
             .join(address_table)
@@ -282,36 +295,36 @@ def select_using_aliases(engine: Engine) -> None:
     )
 
 
-def select_subquery(engine:Engine) -> None:
+def select_subquery(engine: Engine) -> None:
     subq = (
         select(func.count(address_table.c.id).label("count"), address_table.c.user_id)
         .group_by(address_table.c.user_id)
         .subquery()
     )
     print(subq)
-    '''
+    """
     SELECT count(address.id) AS count, address.user_id
     FROM address GROUP BY address.user_id
-    '''
+    """
 
-    print('\n')
+    print("\n")
     print(select(subq.c.user_id, subq.c.count))
-    '''
+    """
     SELECT anon_1.user_id, anon_1.count
     FROM (SELECT count(address.id) AS count, address.user_id AS user_id
     FROM address GROUP BY address.user_id) AS anon_1
-    '''
+    """
 
-    print('\n')
+    print("\n")
     stmt = select(user_table.c.name, user_table.c.fullname, subq.c.count).join_from(
         user_table, subq
     )
     print(stmt)
-    '''
+    """
     SELECT user_account.name, user_account.fullname, anon_1.count
     FROM user_account JOIN (SELECT count(address.id) AS count, address.user_id AS user_id
     FROM address GROUP BY address.user_id) AS anon_1 ON user_account.id = anon_1.user_id
-    '''
+    """
 
 
 def select_cte(engine: Engine) -> None:
@@ -327,13 +340,13 @@ def select_cte(engine: Engine) -> None:
     )
 
     print(stmt)
-    '''
+    """
     WITH anon_1 AS
     (SELECT count(address.id) AS count, address.user_id AS user_id
     FROM address GROUP BY address.user_id)
     SELECT user_account.name, user_account.fullname, anon_1.count
     FROM user_account JOIN anon_1 ON user_account.id = anon_1.user_id
-    '''
+    """
 
 
 def scalar_and_correlated_subqueries(engine: Engine) -> None:
@@ -344,31 +357,31 @@ def scalar_and_correlated_subqueries(engine: Engine) -> None:
         .scalar_subquery()
     )
     print(subq)
-    '''
+    """
     (SELECT count(address.id) AS count_1
     FROM address, user_account
     WHERE user_account.id = address.user_id)
-    '''
+    """
 
-    print('\n')
+    print("\n")
     print(subq == 5)
-    '''
+    """
     (SELECT count(address.id) AS count_1
     FROM address, user_account
     WHERE user_account.id = address.user_id) = :param_1
-    '''
+    """
 
-    print('\n')
+    print("\n")
     stmt = select(user_table.c.name, subq.label("address_count"))
     print(stmt)
-    '''
+    """
     SELECT user_account.name, (SELECT count(address.id) AS count_1
         FROM address
         WHERE user_account.id = address.user_id) AS address_count
     FROM user_account
-    '''
+    """
 
-    print('\n')
+    print("\n")
     subq = (
         select(func.count(address_table.c.id))
         .where(user_table.c.id == address_table.c.user_id)
@@ -376,7 +389,7 @@ def scalar_and_correlated_subqueries(engine: Engine) -> None:
         .correlate(user_table)
     )
     print(subq)
-    print('\n')
+    print("\n")
     stmt = (
         select(
             user_table.c.name,
@@ -387,25 +400,26 @@ def scalar_and_correlated_subqueries(engine: Engine) -> None:
         .order_by(user_table.c.id, address_table.c.id)
     )
     print(stmt)
-    '''
+    """
     SELECT user_account.name, address.email_address, (SELECT count(address.id) AS count_1
         FROM address
         WHERE user_account.id = address.user_id) AS address_count
     FROM user_account JOIN address ON user_account.id = address.user_id
     ORDER BY user_account.id, address.id
-    '''
+    """
 
 
 def union_and_set_operations(engine: Engine) -> None:
     from sqlalchemy import union_all
+
     stmt1 = select(user_table).where(user_table.c.name == "sandy")
     stmt2 = select(user_table).where(user_table.c.name == "spongebob")
     u = union_all(stmt1, stmt2)
-    '''
+    """
     SELECT user_account.id, user_account.name, user_account.fullname FROM user_account WHERE user_account.name = %s
     UNION ALL
     SELECT user_account.id, user_account.name, user_account.fullname FROM user_account WHERE user_account.name = %s
-    '''
+    """
     with engine.connect() as conn:
         result = conn.execute(u)
         print(result.all())
@@ -416,7 +430,7 @@ def union_and_set_operations(engine: Engine) -> None:
         .join_from(address_table, u_subq)
         .order_by(u_subq.c.name, address_table.c.email_address)
     )
-    '''
+    """
     SELECT anon_1.name, address.email_address
     FROM address INNER JOIN (
         SELECT user_account.id AS id, user_account.name AS name, user_account.fullname AS fullname FROM user_account WHERE user_account.name = %s
@@ -424,7 +438,7 @@ def union_and_set_operations(engine: Engine) -> None:
         SELECT user_account.id AS id, user_account.name AS name, user_account.fullname AS fullname FROM user_account WHERE user_account.name = %s
         ) AS anon_1 ON anon_1.id = address.user_id
     ORDER BY anon_1.name, address.email_address
-    '''
+    """
     with engine.connect() as conn:
         result = conn.execute(stmt)
         print(result.all())
@@ -437,7 +451,7 @@ def exists_subquery(engine: Engine) -> None:
         .group_by(address_table.c.user_id)
         .having(func.count(address_table.c.id) > 1)
     ).exists()
-    '''
+    """
     SELECT user_account.name
     FROM user_account
     WHERE EXISTS (
@@ -447,15 +461,13 @@ def exists_subquery(engine: Engine) -> None:
         GROUP BY address.user_id
         HAVING count(address.id) > %s
     )
-    '''
+    """
     with engine.connect() as conn:
         result = conn.execute(select(user_table.c.name).where(subq))
         print(result.all())
 
-    subq = (
-        select(address_table.c.id).where(user_table.c.id == address_table.c.user_id)
-    ).exists()
-    '''
+    subq = (select(address_table.c.id).where(user_table.c.id == address_table.c.user_id)).exists()
+    """
     SELECT user_account.name
     FROM user_account
     WHERE NOT (
@@ -465,7 +477,7 @@ def exists_subquery(engine: Engine) -> None:
             WHERE user_account.id = address.user_id
         )
     )
-    '''
+    """
     with engine.connect() as conn:
         result = conn.execute(select(user_table.c.name).where(~subq))
         print(result.all())
@@ -488,46 +500,51 @@ def sql_functions(engine: Engine) -> None:
     # SELECT some_crazy_function(user_account.name, :some_crazy_function_2) AS some_crazy_function_1 FROM user_account
 
     from sqlalchemy.dialects import postgresql
+
     print(select(func.now()).compile(dialect=postgresql.dialect()))
     # SELECT now() AS now_1
 
     from sqlalchemy.dialects import oracle
+
     print(select(func.now()).compile(dialect=oracle.dialect()))
     # SELECT CURRENT_TIMESTAMP AS now_1 FROM DUAL
 
 
 def sql_functions_and_return_types(engine: Engine) -> None:
-    print(func.now().type) # DATETIME
+    print(func.now().type)  # DATETIME
 
     from sqlalchemy import JSON
+
     function_expr = func.json_object('{a, 1, b, "def", c, 3.5}', type_=JSON)
-    print(function_expr) # json_object(:json_object_1)
+    print(function_expr)  # json_object(:json_object_1)
 
     stmt = select(function_expr["def"])
-    print(stmt) # SELECT json_object(:json_object_1)[:json_object_2] AS anon_1
+    print(stmt)  # SELECT json_object(:json_object_1)[:json_object_2] AS anon_1
     # with engine.connect() as conn:
     #     result = conn.execute(stmt)
     #     print(result.all())
 
     # Built-in Functions Have Pre-Configured Return Types
     m1 = func.max(Column("some_int", Integer))
-    print(m1.type) # INTEGER
+    print(m1.type)  # INTEGER
 
     m2 = func.max(Column("some_str", String))
-    print(m2.type) # VARCHAR
+    print(m2.type)  # VARCHAR
 
-    print(func.now().type) # DATETIME
-    print(func.current_date().type) # DATE
+    print(func.now().type)  # DATETIME
+    print(func.current_date().type)  # DATE
 
-    print(func.concat("x", "y").type) # VARCHAR
+    print(func.concat("x", "y").type)  # VARCHAR
 
-    print(func.upper("lowercase").type) # NULL
+    print(func.upper("lowercase").type)  # NULL
 
-    print(select(func.upper("lowercase") + " suffix")) # SELECT upper(:upper_1) || :upper_2 AS anon_1
+    print(
+        select(func.upper("lowercase") + " suffix")
+    )  # SELECT upper(:upper_1) || :upper_2 AS anon_1
 
-    print(func.count().type) # INTEGER
+    print(func.count().type)  # INTEGER
 
-    print(func.json_object('{"a", "b"}').type) # NULL
+    print(func.json_object('{"a", "b"}').type)  # NULL
 
 
 def window_function(engine: Engine) -> None:
@@ -540,17 +557,16 @@ def window_function(engine: Engine) -> None:
         .select_from(user_table)
         .join(address_table)
     )
-    '''
+    """
     SELECT
         row_number() OVER (PARTITION BY user_account.name) AS anon_1,
         user_account.name,
         address.email_address
     FROM user_account INNER JOIN address ON user_account.id = address.user_id
-    '''
+    """
     with engine.connect() as conn:
         result = conn.execute(stmt)
         print(result.all())
-
 
     stmt = (
         select(
@@ -561,13 +577,13 @@ def window_function(engine: Engine) -> None:
         .select_from(user_table)
         .join(address_table)
     )
-    '''
+    """
     SELECT
         count(*) OVER (ORDER BY user_account.name) AS anon_1,
         user_account.name,
         address.email_address
     FROM user_account INNER JOIN address ON user_account.id = address.user_id
-    '''
+    """
     with engine.connect() as conn:
         result = conn.execute(stmt)
         print(result.all())
@@ -577,27 +593,25 @@ def select_filter(engine: Engine) -> None:
     stmt = (
         select(
             func.count(address_table.c.email_address).filter(user_table.c.name == "sandy"),
-            func.count(address_table.c.email_address).filter(
-                user_table.c.name == "spongebob"
-            ),
+            func.count(address_table.c.email_address).filter(user_table.c.name == "spongebob"),
         )
         .select_from(user_table)
         .join(address_table)
     )
-    '''
+    """
     SELECT
         count(address.email_address) FILTER (WHERE user_account.name = %s) AS anon_1,
         count(address.email_address) FILTER (WHERE user_account.name = %s) AS anon_2
     FROM user_account INNER JOIN address ON user_account.id = address.user_id
-    '''
+    """
     # not supported by MYSQL
     print(stmt)
-    '''
+    """
     [SQL: SELECT anon_1.value
     FROM json_each(%s) AS anon_1
     WHERE anon_1.value IN (%s, %s)]
     [parameters: ('["one", "two", "three"]', 'two', 'three')]
-    '''
+    """
     # with engine.connect() as conn:
     #     result = conn.execute(stmt)
     #     print(result.all())
@@ -615,32 +629,32 @@ def table_valued_functions(engine: Engine) -> None:
 
 def data_casts_and_type_coercion(engine: Engine) -> None:
     from sqlalchemy import cast
+
     stmt = select(cast(user_table.c.id, String))
-    '''
+    """
     SELECT CAST(user_account.id AS CHAR) AS id
     FROM user_account
-    '''
+    """
     with engine.connect() as conn:
         result = conn.execute(stmt)
         result.all()
 
     from sqlalchemy import JSON
-    print(cast("{'a': 'b'}", JSON)["a"]) # CAST(:param_1 AS JSON)[:param_2]
+
+    print(cast("{'a': 'b'}", JSON)["a"])  # CAST(:param_1 AS JSON)[:param_2]
 
     # type_coerce() - a Python-only “cast”
-    import json
 
     from sqlalchemy import JSON, type_coerce
     from sqlalchemy.dialects import mysql
+
     s = select(type_coerce({"some_key": {"foo": "bar"}}, JSON)["some_key"])
-    print(s.compile(dialect=mysql.dialect())) # SELECT JSON_EXTRACT(%s, %s) AS anon_1
+    print(s.compile(dialect=mysql.dialect()))  # SELECT JSON_EXTRACT(%s, %s) AS anon_1
 
 
 def update_data(engine: Engine) -> None:
     stmt = (
-        update(user_table)
-        .where(user_table.c.name == "patrick")
-        .values(fullname="Patrick the Star")
+        update(user_table).where(user_table.c.name == "patrick").values(fullname="Patrick the Star")
     )
     print(stmt)
     # UPDATE user_account SET fullname=:fullname WHERE user_account.name = :name_1
@@ -652,6 +666,7 @@ def update_data(engine: Engine) -> None:
 
 def update_many(engine: Engine) -> None:
     from sqlalchemy import bindparam
+
     stmt = (
         update(user_table)
         .where(user_table.c.name == bindparam("oldname"))
@@ -679,7 +694,7 @@ def correlated_updates(engine: Engine) -> None:
     )
     update_stmt = update(user_table).values(fullname=scalar_subq)
     print(update_stmt)
-    '''
+    """
     UPDATE user_account SET fullname=(
         SELECT address.email_address
         FROM address
@@ -687,7 +702,7 @@ def correlated_updates(engine: Engine) -> None:
         ORDER BY address.id
         LIMIT :param_1
     )
-    '''
+    """
 
 
 def update_from(engine: Engine) -> None:
@@ -713,6 +728,7 @@ def update_from(engine: Engine) -> None:
         )
     )
     from sqlalchemy.dialects import mysql
+
     print(update_stmt.compile(dialect=mysql.dialect()))
     # UPDATE user_account, address SET address.email_address=%s, user_account.fullname=%s WHERE user_account.id = address.user_id AND address.email_address = %s
 
@@ -738,6 +754,7 @@ def delete_date(engine: Engine) -> None:
         .where(address_table.c.email_address == "patrick@aol.com")
     )
     from sqlalchemy.dialects import mysql
+
     print(delete_stmt.compile(dialect=mysql.dialect()))
     # DELETE FROM user_account USING user_account, address WHERE user_account.id = address.user_id AND address.email_address = %s
 
@@ -771,9 +788,9 @@ def using_returnning_with_update_delete(engine: Engine) -> None:
     # DELETE FROM user_account WHERE user_account.name = :name_1 RETURNING user_account.id, user_account.name
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     load_env()
-    test_db = os.getenv('LOCAL_TEST_DB')
+    test_db = os.getenv("LOCAL_TEST_DB")
     if test_db is None:
         sys.exit(1)
 
@@ -819,5 +836,3 @@ if __name__ == '__main__':
     # delete_date(engine=engine)
     # get_affected_row_count_from_update_delete(engine=engine)
     using_returnning_with_update_delete(engine=engine)
-
-

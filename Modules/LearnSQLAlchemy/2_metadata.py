@@ -2,8 +2,7 @@
 import os
 import sys
 
-from sqlalchemy import (Column, ForeignKey, Integer, MetaData, String, Table,
-                        create_engine)
+from sqlalchemy import Column, ForeignKey, Integer, MetaData, String, Table, create_engine
 from Utils.env_util import load_env
 
 metadata_obj = MetaData()
@@ -24,9 +23,9 @@ address_table = Table(
     Column("email_address", String(120), nullable=False),
 )
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     load_env()
-    test_db = os.getenv('LOCAL_TEST_DB')
+    test_db = os.getenv("LOCAL_TEST_DB")
     if test_db is None:
         sys.exit(1)
 
@@ -38,4 +37,3 @@ if __name__ == '__main__':
 
     metadata_obj.create_all(engine)
     # metadata_obj.drop_all(engine)
-
