@@ -1,0 +1,44 @@
+[tool.ruff]
+# Target Python version (affects pyupgrade + some lint rules)
+target-version = "py312"
+
+# Maximum line length (keep consistent with Black)
+line-length = 100
+
+
+[tool.ruff.lint]
+select = [
+    # Core
+    "E",   # pycodestyle errors (basic style issues)
+    "F",   # pyflakes (unused imports, variables, etc.)
+
+    # Imports
+    "I",   # import sorting (isort equivalent)
+
+    # Modernization
+    "UP",  # pyupgrade (modern Python syntax)
+
+    # Safety
+    "B",   # flake8-bugbear (bug-prone patterns)
+]
+
+ignore = [
+    "E501",  # line length handled by formatter (Black)
+    "B018",  # useless expression (often noisy in notebooks/debugging)
+]
+
+
+[tool.ruff.lint.per-file-ignores]
+# Relax linting for notebooks (less strict than .py files)
+"*.ipynb" = [
+    "E",   # style issues
+    "F",   # unused imports/vars
+    "I",   # import sorting
+    "UP",  # syntax upgrades
+    "B",   # bugbear rules
+]
+
+
+[tool.ruff.format]
+# Keep formatting consistent with Black
+quote-style = "double"
