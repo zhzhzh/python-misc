@@ -1,11 +1,10 @@
 import os
-from typing import Dict
 
 import pandas as pd
 from dotenv import load_dotenv
 
 # from IPython import get_ipython
-from pandas import DataFrame, Series
+from pandas import DataFrame
 
 load_dotenv()
 
@@ -21,7 +20,9 @@ def get_env(env_variable: str) -> str:
 
 MART_PROD = f"mssql+pyodbc://jie_zhang:{get_env('DWH_PASSWORD_JIE')}@nbea-dev-use2-sql.public.209f1e31ec07.database.windows.net:3342/MART_PROD?Encrypt=yes&TrustServerCertificate=yes&driver=ODBC+Driver+18+for+SQL+Server"
 DEV_FINTECH = f"mssql+pyodbc://jie_zhang:{get_env('DWH_PASSWORD_JIE')}@nbea-dev-use2-sql.public.209f1e31ec07.database.windows.net:3342/DEV_FINTECH?driver=ODBC+Driver+18+for+SQL+Server"
-FLEX_LOCAL = f"mysql+mysqldb://admin:{get_env('MYSQL_PASSWORD_LOCAL')}@host.docker.internal:3306/flex"
+FLEX_LOCAL = (
+    f"mysql+mysqldb://admin:{get_env('MYSQL_PASSWORD_LOCAL')}@host.docker.internal:3306/flex"
+)
 
 # ipython = get_ipython()
 # ipython.run_line_magic("load_ext", "sql")
@@ -35,7 +36,7 @@ supported DB:
 print(hint)
 
 
-def save_dfs_to_excel(dfs: Dict[str, DataFrame], filename: str) -> None:
+def save_dfs_to_excel(dfs: dict[str, DataFrame], filename: str) -> None:
     """
     Save multiple DataFrames to an Excel file, each DataFrame in a separate sheet,
     using xlsxwriter as the engine.

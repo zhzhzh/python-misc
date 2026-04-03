@@ -12,17 +12,18 @@ def validate_json(*expected_args):
                 if expected_arg not in json_object:
                     print(400)
             return func(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
-@validate_json('student_id')
+@validate_json("student_id")
 def update_grade():
-    json_data = {
-
-    }
+    json_data = {}
     print(json_data)
     # update database
     return "success!"
+
 
 update_grade()
