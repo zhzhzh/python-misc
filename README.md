@@ -2,11 +2,11 @@
 
 python misc code, able to run in docker and local.
 
-Python Version: 3.11
+Python Version: 3.12
 
 ```bash
 # crate the environment in local
-conda create -n python-misc python=3.11
+conda create -n python-misc python=3.12
 
 # activate the environment
 conda activate python-misc
