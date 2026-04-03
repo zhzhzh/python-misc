@@ -41,9 +41,7 @@ class MouseMover:
 
     def random_move(self, hours: float = 3.0, interval: int = 25) -> None:
         times = int((hours * 3600) / interval) + 1
-        logger.info(
-            f"Running for {hours} hours, interval {interval} seconds, loop {times} times"
-        )
+        logger.info(f"Running for {hours} hours, interval {interval} seconds, loop {times} times")
 
         step = 10
 

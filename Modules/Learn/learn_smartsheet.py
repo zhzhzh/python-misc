@@ -11,9 +11,9 @@ print("OS", platform.system(), platform.version())
 print("Python", platform.python_version())
 print("OpenSSL", ssl.OPENSSL_VERSION)
 print("Requests", requests.__version__)
-print("Urllib3", urllib3.__version__)
+# print("Urllib3", urllib3.__version__)
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # type: ignore
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # type: ignore
 
 # s = requests.Session()
 # s.verify = False
@@ -33,7 +33,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # type: igno
 
 sheet_id = 1953997402728324
 load_env()
-token = os.getenv('SMARTSHEET_API_TOKEN')
+token = os.getenv("SMARTSHEET_API_TOKEN")
 
 ss_client = smartsheet.Smartsheet(token)
 ss_client.errors_as_exceptions(True)
