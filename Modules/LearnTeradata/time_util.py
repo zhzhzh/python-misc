@@ -1,14 +1,16 @@
-import pytz
 import datetime
 import time
 
-HOUR_FORMAT = '%Y-%m-%d %H:00:00'
-TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
-DATE_FORMAT = '%Y%m%d'
+import pytz
+
+HOUR_FORMAT = "%Y-%m-%d %H:00:00"
+TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+DATE_FORMAT = "%Y%m%d"
+
 
 def get_server_timezone():
     # return pytz.timezone('America/Los_Angeles')
-    return pytz.timezone('PST8PDT')
+    return pytz.timezone("PST8PDT")
 
 
 def get_server_now():
@@ -56,22 +58,17 @@ def get_time_str_from_timestamp(ts):
 def get_time_from_str(date_str):
     if len(date_str) == 8:
         return datetime.date(
-            year=int(date_str[0:4]),
-            month=int(date_str[4:6]),
-            day=int(date_str[6:8])
+            year=int(date_str[0:4]), month=int(date_str[4:6]), day=int(date_str[6:8])
         )
     else:
         return datetime.datetime(
             year=int(date_str[0:4]),
             month=int(date_str[4:6]),
             day=int(date_str[6:8]),
-            hour=int(date_str[8:10])
+            hour=int(date_str[8:10]),
         )
 
 
 def get_time_to_hour(dt):
-    hour_dt = datetime.datetime(year=dt.year,
-                                month=dt.month,
-                                day=dt.day,
-                                hour=dt.hour)
+    hour_dt = datetime.datetime(year=dt.year, month=dt.month, day=dt.day, hour=dt.hour)
     return hour_dt

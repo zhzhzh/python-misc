@@ -1,11 +1,12 @@
-import requests
 import sys
 
-url = 'https://paypaltest.service-now.com/api/payp2/table/change_request'
-username = 'api_risk_rom'
-password = 'Riskrom@2016'
+import requests
 
-headers = {'Content-Type': 'application/json'}
+url = "https://paypaltest.service-now.com/api/payp2/table/change_request"
+username = "api_risk_rom"
+password = "Riskrom@2016"
+
+headers = {"Content-Type": "application/json"}
 
 payload = {
     "short_description": "Enable Pluto Rules",
@@ -35,7 +36,7 @@ payload = {
     "u_generate_az_tasks": "false",
     "u_change_environment": "None of the listed environments",
     "type": "Standard",
-    "state": "closed"
+    "state": "closed",
 }
 
 ret = requests.post(url, headers=headers, auth=(username, password), json=payload)
@@ -47,11 +48,11 @@ if ret.status_code != 201:
     sys.exit(1)
 
 json_data = ret.json()
-sys_id = json_data['result']['sys_id']
-number = json_data['result']['record_id']
+sys_id = json_data["result"]["sys_id"]
+number = json_data["result"]["record_id"]
 
 
-url = 'https://paypaltest.service-now.com/api/payp2/table/change_request/{}'.format(sys_id)
+url = f"https://paypaltest.service-now.com/api/payp2/table/change_request/{sys_id}"
 print(url)
 ret = requests.get(url, auth=(username, password))
 if ret.status_code != 200:
@@ -60,7 +61,7 @@ if ret.status_code != 200:
 else:
     print(ret.json())
 
-url = 'https://paypaltest.service-now.com/api/payp2/table/change_request/number/{}'.format(number)
+url = f"https://paypaltest.service-now.com/api/payp2/table/change_request/number/{number}"
 print(url)
 ret = requests.get(url, auth=(username, password))
 if ret.status_code != 200:
@@ -68,6 +69,3 @@ if ret.status_code != 200:
     print(ret.json())
 else:
     print(ret.json())
-
-
-

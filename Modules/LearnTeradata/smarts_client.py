@@ -1,16 +1,16 @@
-import requests
-from urllib.parse import urlencode
-from urllib.parse import quote
-import hmac
-import hashlib
 import base64
 import datetime
+import hashlib
+import hmac
 import json
 import os.path
+from urllib.parse import quote, urlencode
+
+import requests
 
 
 class SmartClient:
-    key = b'SeEUKpWHvCbRjFSBwRQpYIgd+sgqBAI4+Jf0JlRQ'
+    key = b"SeEUKpWHvCbRjFSBwRQpYIgd+sgqBAI4+Jf0JlRQ"
     appId = "5E91C5E6537E7C90059E7E24871A4CE631056377"
     workspaceId = "Top/Auto"
 
@@ -19,7 +19,7 @@ class SmartClient:
     disconnectResource = "/DecisionServer/decision-services/deployments/disconnect"
     evaluateResource = "/DecisionServer/decision-services/deployments/evaluate"
 
-    def __init__(self, project, decision, credential_file, host='bluepen.qa.paypal.com'):
+    def __init__(self, project, decision, credential_file, host="bluepen.qa.paypal.com"):
         self.host = host
         self.hostUri = "http://" + host
         self.credential_file = credential_file
@@ -30,11 +30,11 @@ class SmartClient:
         self.pwd = None
 
         if os.path.isfile(credential_file):
-            with open('credential.json', 'r') as f:
+            with open("credential.json") as f:
                 json_data = f.read()
                 credentials = json.loads(json_data)
-                self.userId = credentials['username']
-                self.pwd = credentials['password']
+                self.userId = credentials["username"]
+                self.pwd = credentials["password"]
 
         self.session_id = None
 
@@ -42,42 +42,29 @@ class SmartClient:
     # Convenience Methods
     # ===================
     @staticmethod
-    def __get_connection_request(operationId, deploymentId, deploymentReleaseId=''):
+    def __get_connection_request(operationId, deploymentId, deploymentReleaseId=""):
         return {
-            'OperationId': operationId,
-            'Header': {
-                'DeploymentId': deploymentId,
-                'DeploymentReleaseId': deploymentReleaseId
-            }
+            "OperationId": operationId,
+            "Header": {"DeploymentId": deploymentId, "DeploymentReleaseId": deploymentReleaseId},
         }
 
     @staticmethod
     def __get_evaluation_request(operationId, sessionId, decisionId, document):
         return {
-            'OperationId': operationId,
-            'Header': {
-                'SessionId': sessionId,
-                'DecisionId': decisionId
-            },
-            'Body': {
-                'Documents': [document]
-            }
+            "OperationId": operationId,
+            "Header": {"SessionId": sessionId, "DecisionId": decisionId},
+            "Body": {"Documents": [document]},
         }
 
     @staticmethod
     def __sign_query(method, host, endpointUri, key, qryParameters):
-        qryParameters['reqTime'] = datetime.datetime.now().isoformat()
-        dataStr = '{method}\n{host}\n{endpoint}\n{encode}'.format(
-            method=method,
-            host=host,
-            endpoint=endpointUri,
-            encode=urlencode(sorted(qryParameters.items()),quote_via=quote)
-        )
+        qryParameters["reqTime"] = datetime.datetime.now().isoformat()
+        dataStr = f"{method}\n{host}\n{endpointUri}\n{urlencode(sorted(qryParameters.items()),quote_via=quote)}"
         # print (dataStr)
         data = dataStr.encode()
         digest = hmac.new(key, msg=data, digestmod=hashlib.sha256).digest()
         signature = base64.b64encode(digest).decode()
-        qryParameters['sign'] = signature
+        qryParameters["sign"] = signature
 
     @staticmethod
     def __post_request(hostUri, resource, signedParameters):
@@ -86,8 +73,13 @@ class SmartClient:
             r.raise_for_status()
         response = r.json()
         # print (response)
-        if response['Success'] == False:
-            print(response['ErrorInfo']['ErrorCode'], ': ', response['ErrorInfo']['ErrorMessage'], sep='')
+        if not response["Success"]:
+            print(
+                response["ErrorInfo"]["ErrorCode"],
+                ": ",
+                response["ErrorInfo"]["ErrorMessage"],
+                sep="",
+            )
             exit()
         return response
 
@@ -95,19 +87,23 @@ class SmartClient:
         reqData = self.__get_connection_request(1, self.project)
 
         qryParameters = {
-            'appId': SmartClient.appId,
-            'userId': self.userId,
-            'pwd': self.pwd,
-            'workspaceId': SmartClient.workspaceId,
-            'reqData': json.dumps(reqData)
+            "appId": SmartClient.appId,
+            "userId": self.userId,
+            "pwd": self.pwd,
+            "workspaceId": SmartClient.workspaceId,
+            "reqData": json.dumps(reqData),
         }
 
-        SmartClient.__sign_query('POST', self.host, SmartClient.connectResource, SmartClient.key, qryParameters)
-        response = SmartClient.__post_request(self.hostUri, SmartClient.connectResource, qryParameters)
-        sessionId = response['Header']['SessionId']
+        SmartClient.__sign_query(
+            "POST", self.host, SmartClient.connectResource, SmartClient.key, qryParameters
+        )
+        response = SmartClient.__post_request(
+            self.hostUri, SmartClient.connectResource, qryParameters
+        )
+        sessionId = response["Header"]["SessionId"]
         if sessionId is not None:
             self.session_id = sessionId
-        print('Connected with session ID:', self.session_id)
+        print("Connected with session ID:", self.session_id)
         return self.session_id
 
     def evaluate(self, document, session_id=None):
@@ -121,35 +117,40 @@ class SmartClient:
 
         reqData = SmartClient.__get_evaluation_request(2, use_session_id, self.decision, document)
         qryParameters = {
-            'appId': SmartClient.appId,
-            'session': use_session_id,
-            'reqData': json.dumps(reqData)
+            "appId": SmartClient.appId,
+            "session": use_session_id,
+            "reqData": json.dumps(reqData),
         }
-        SmartClient.__sign_query('POST', self.host, SmartClient.evaluateResource, SmartClient.key, qryParameters)
-        response = SmartClient.__post_request(self.hostUri, SmartClient.evaluateResource, qryParameters)
+        SmartClient.__sign_query(
+            "POST", self.host, SmartClient.evaluateResource, SmartClient.key, qryParameters
+        )
+        response = SmartClient.__post_request(
+            self.hostUri, SmartClient.evaluateResource, qryParameters
+        )
         return response
 
     def disconnect(self):
         if self.session_id is None:
-            print('Session ID is None, no need to disconnect')
+            print("Session ID is None, no need to disconnect")
             return
 
-        qryParameters = {
-            'appId': SmartClient.appId,
-            'session': self.session_id
-        }
+        qryParameters = {"appId": SmartClient.appId, "session": self.session_id}
 
-        SmartClient.__sign_query('POST', self.host, SmartClient.disconnectResource, SmartClient.key, qryParameters)
-        response = SmartClient.__post_request(self.hostUri, SmartClient.disconnectResource, qryParameters)
-        print('Successfully disconnected')
+        SmartClient.__sign_query(
+            "POST", self.host, SmartClient.disconnectResource, SmartClient.key, qryParameters
+        )
+        response = SmartClient.__post_request(
+            self.hostUri, SmartClient.disconnectResource, qryParameters
+        )
+        print("Successfully disconnected")
         return response
 
 
-if __name__ == '__main__':
-    project = 'jzhang14 test'
-    decision = 'Rule Review Demo'
-    credential_file = 'credential.json'
-    input_json_file = 'json_data/rule_form.json'
+if __name__ == "__main__":
+    project = "jzhang14 test"
+    decision = "Rule Review Demo"
+    credential_file = "credential.json"
+    input_json_file = "json_data/rule_form.json"
     client = SmartClient(project, decision, credential_file)
 
     with open(input_json_file) as f:
@@ -158,19 +159,14 @@ if __name__ == '__main__':
 
     ret = client.evaluate(document)
 
-    print('===========================================================================')
+    print("===========================================================================")
     print(type(ret))
-    print('===========================================================================')
+    print("===========================================================================")
     print(ret)
-    print('===========================================================================')
+    print("===========================================================================")
     print(json.dumps(ret))
-    print('===========================================================================')
-    print('Processed document, Results:', ret['Body']['Documents'][0]['Results'])
-    print('===========================================================================')
-
+    print("===========================================================================")
+    print("Processed document, Results:", ret["Body"]["Documents"][0]["Results"])
+    print("===========================================================================")
 
     client.disconnect()
-
-
-
-

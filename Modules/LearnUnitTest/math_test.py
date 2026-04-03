@@ -1,5 +1,6 @@
 import unittest
-from math_func import *
+
+from math_func import add
 
 
 class MyTestCase(unittest.TestCase):
@@ -14,7 +15,7 @@ class MyTestCase(unittest.TestCase):
 
     def setUp(self):
         method = self._testMethodName
-        print("test Setup for {}".format(method))
+        print(f"test Setup for {method}")
 
     def tearDown(self):
         print("test tear down")
@@ -24,15 +25,15 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(3, add(1, 2))
         self.assertNotEqual(3, add(1, 3))
         with self.assertRaises(TypeError):
-            add('a', 2)
+            add("a", 2)
 
     def test_add2(self):
         print("test_add2")
         self.assertEqual(3, add(1, 2))
         self.assertNotEqual(3, add(1, 3))
         with self.assertRaises(TypeError):
-            add('a', 2)
+            add("a", 2)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
