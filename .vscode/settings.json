@@ -3,25 +3,31 @@
     "editor.tabSize": 4,
     "editor.insertSpaces": true,
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": false,
     "editor.formatOnSaveMode": "file",
+    "editor.formatOnPaste": false,
+    "editor.formatOnType": false,
     "editor.defaultFormatter": "ms-python.black-formatter",
-    "editor.formatOnType": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.ruff": "explicit"
+    }
   },
   "black-formatter.args": [
-    "--line-length=88"
+    "--line-length=100"
   ],
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/Modules"
+  ],
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.diagnosticMode": "openFilesOnly",
+  "python.envFile": "${workspaceFolder}/.local.env",
   "terminal.integrated.env.osx": {
     "PYTHONPATH": "${workspaceFolder}/Modules"
   },
   "terminal.integrated.env.windows": {
-    "PYTHONPATH": "${env:PYTHONPATH};${workspaceFolder}/Modules"
+    "PYTHONPATH": "${workspaceFolder}/Modules"
   },
-  "python.analysis.extraPaths": [
-    "${workspaceFolder}/Modules"
-  ],
-  "python.autoComplete.extraPaths": [
-    "${workspaceFolder}/Modules"
-  ],
-  "python.analysis.autoImportCompletions": true
+  "terminal.integrated.env.linux": {
+    "PYTHONPATH": "${workspaceFolder}/Modules"
+  }
 }
